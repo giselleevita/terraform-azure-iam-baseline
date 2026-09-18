@@ -3,6 +3,10 @@ data "azurerm_storage_account" "this" {
   resource_group_name = var.resource_group_name
 }
 
+data "azurerm_resource_group" "this" {
+  name = var.resource_group_name
+}
+
 locals {
   # Role assignment is scoped to one container, not the storage account and not
   # the resource group. Narrowing the scope is the entire point of this module.
@@ -17,8 +21,11 @@ resource "azurerm_user_assigned_identity" "this" {
 }
 
 resource "azurerm_role_definition" "blob_read_only" {
-  name        = var.role_name
-  scope       = local.container_scope
+  name = var.role_name
+  # Azure custom roles can be assignable at management-group, subscription,
+  # or resource-group scope—not at an individual blob container. The actual
+  # grant remains container-scoped in azurerm_role_assignment below.
+  scope       = data.azurerm_resource_group.this.id
   description = "Least-privilege read-only access to blobs in container ${var.container_name}"
 
   permissions {
@@ -38,7 +45,7 @@ resource "azurerm_role_definition" "blob_read_only" {
   }
 
   assignable_scopes = [
-    local.container_scope
+    data.azurerm_resource_group.this.id
   ]
 }
 

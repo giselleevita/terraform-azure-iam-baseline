@@ -33,8 +33,8 @@ variable "storage_account_name" {
   type        = string
 
   validation {
-    condition     = length(trim(var.storage_account_name, " ")) > 0
-    error_message = "storage_account_name must not be empty."
+    condition     = can(regex("^[a-z0-9]{3,24}$", var.storage_account_name))
+    error_message = "storage_account_name must be 3-24 lowercase letters or digits."
   }
 }
 
@@ -43,8 +43,8 @@ variable "container_name" {
   type        = string
 
   validation {
-    condition     = length(trim(var.container_name, " ")) > 0
-    error_message = "container_name must not be empty."
+    condition     = length(var.container_name) >= 3 && length(var.container_name) <= 63 && can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", var.container_name)) && !strcontains(var.container_name, "--")
+    error_message = "container_name must meet Azure's 3-63 character lowercase DNS naming rules."
   }
 }
 

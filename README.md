@@ -43,7 +43,8 @@ flowchart TD
 | Data-plane read only | `data_actions` grants blob `read` alone; no `write`, `delete`, or `add` |
 | No key access | `listKeys` is never granted, so the identity cannot fall back to shared-key auth |
 | No secret in Terraform | A managed identity has no credential to store, rotate, or leak |
-| Bounded assignability | `assignable_scopes` is the same single container, so the role cannot be reused more broadly |
+| Valid custom-role scope | The role definition is assignable within the resource group, Azure's narrowest supported custom-role scope |
+| Container-scoped grant | The only role assignment created by this module targets the single container resource ID |
 | Input validation | Identity, role, resource group, storage account, and container names must be non-empty |
 
 ---
@@ -84,7 +85,7 @@ module "evidence_reader" {
 }
 ```
 
-The storage account and container are expected to exist already and to be managed separately.
+The storage account and container are expected to exist already and to be managed separately. Azure does not allow a custom role definition's `assignable_scopes` to be a blob container, so the definition is scoped to the resource group while the actual role assignment remains scoped to the named container.
 
 ---
 
